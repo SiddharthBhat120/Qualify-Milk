@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Models &amp; accuracy · Qualify Milk{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="wrap">
+    <span class="kicker"><i></i> Trained on {{ '{:,}'.format(metrics.dataset.rows) if metrics else '1,059' }} samples</span>
+    <h1 class="display-l">How good is it?</h1>
+    <p class="lead">Ten algorithms trained on the same data and tested two ways. The best one powers the analyser.</p>
+  </div>
+</section>
+
+{% if not metrics %}
+<div class="wrap"><div class="panel">No training results yet. Run <code>python ml/train.py</code> and reload this page.</div></div>
+{% else %}
+<div class="wrap" style="display:grid;gap:22px;padding-bottom:40px">
+  <div class="big-stats reveal">
+    <div class="big-stat hero-stat"><b data-count="{{ '%g'|format(metrics.holdout_accuracy) }}" data-suffix="%">0</b><span>{{ metrics.best_model }} on the 80/20 test split (old model: {{ metrics.original_best.accuracy }}%)</span></div>
+    <div class="big-stat"><b data-count="{{ best.standard.accuracy }}" data-suffix="%">0</b><span>10-fold cross-validation accuracy</span></div>
+    <div class="big-stat"><b data-count="{{ best.unseen.accuracy }}" data-suffix="%">0</b><span>on samples it has never seen</span></div>
+    <div class="big-stat"><b data-count="{{ best.standard.roc_auc }}" data-suffix="%">0</b><span>ROC-AUC (how well it ranks grades)</span></div>
+  </div>
+
+  <div class="panel reveal">
+    <div class="panel-title"><h2>All models compared</h2>
+      <div class="chart-legend" style="margin:0"><span><i style="background:var(--ink)"></i>Standard accuracy</span><span><i style="background:var(--cobalt)"></i>Unseen-sample accuracy</span></div>
+    </div>
+    <div class="bars">
+      {% for r in metrics.models %}
+      <div class="bar-row {% if r.name == metrics.best_model %}best{% endif %}">
+        <span class="name">{{ r.name }}</span>
+        <div class="bar-stack">
+          <div class="bar std"><i data-w="{{ r.standard.accuracy }}%" style="--d:{{ loop.index0 * 0.06 }}s"></i><em>{{ r.standard.accuracy }}%</em></div>
+          <div class="bar uns"><i data-w="{{ r.unseen.accuracy }}%" style="--d:{{ loop.index0 * 0.06 + 0.1 }}s"></i><em>{{ r.unseen.accuracy }}%</em></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="note-box reveal">
+    <b>Why two scores?</b> The dataset has {{ '{:,}'.format(metrics.dataset.rows) }} rows but only {{ metrics.dataset.unique_samples }} unique samples. The other {{ metrics.dataset.duplicates }} rows are exact repeats. With a normal random split, copies of the same sample land in both training and test data, so most models score about 99%. The <b>unseen</b> score keeps every copy together, so the model is always tested on samples it has never seen. That's the honest measure of how it will do on new milk, and it's how the best model was chosen.
+  </div>
+
+  <div class="two-col">
+    <div class="panel reveal">
+      <h2 style="font-size:1.6rem;margin-bottom:6px">Where it gets confused</h2>
+      <p class="muted" style="font-size:15px">{{ metrics.best_model }} on unseen samples. Rows are the real grade, columns are the prediction.</p>
+      {% set cm = metrics.confusion_matrix %}{% set labels = ['Low','Medium','High'] %}
+      {% set ns = namespace(mx=1) %}{% for row in cm %}{% for v in row %}{% if v > ns.mx %}{% set ns.mx = v %}{% endif %}{% endfor %}{% endfor %}
+      <div class="cm" style="margin-top:18px">
+        <div></div>{% for l in labels %}<div class="h">{{ l }}</div>{% endfor %}
+        {% for row in cm %}{% set i = loop.index0 %}
+        <div class="h" style="text-align:left">{{ labels[i] }}</div>
+        {% for v in row %}<div class="cell {% if v / ns.mx > 0.5 %}dark{% endif %}" style="--a:{{ '%.2f'|format(0.06 + 0.94 * v / ns.mx) }};--d:{{ (i * 3 + loop.index0) * 0.05 }}s">{{ v }}</div>{% endfor %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="panel reveal">
+      <h2 style="font-size:1.6rem;margin-bottom:6px">What it pays attention to</h2>
+      <p class="muted" style="font-size:15px">How much accuracy drops when each reading is scrambled. Bigger means the reading matters more.</p>
+      <div class="imp" style="margin-top:18px">
+        {% for f in metrics.feature_importance or [] %}
+        <div class="imp-row"><span>{{ f.feature }}</span><div class="bar"><i data-w="{{ (f.value / metrics.feature_importance[0].value * 100)|round(1) }}%" style="--d:{{ loop.index0 * 0.07 }}s"></i></div><span>{{ f.value|round(1) }}%</span></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="panel reveal">
+    <h2 style="font-size:1.6rem;margin-bottom:16px">Full scores</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Model</th><th class="num">80/20 test</th><th class="num">Standard CV</th><th class="num">Unseen</th><th class="num">Precision</th><th class="num">Recall</th><th class="num">F1</th><th class="num">ROC-AUC</th></tr></thead>
+        <tbody>
+          {% for r in metrics.models %}
+          <tr class="{% if r.name == metrics.best_model %}best-row{% endif %}">
+            <td>{{ r.name }}</td><td class="num">{{ r.holdout }}%</td><td class="num">{{ r.standard.accuracy }}%</td><td class="num">{{ r.unseen.accuracy }}%</td>
+            <td class="num">{{ r.unseen.precision }}%</td><td class="num">{{ r.unseen.recall }}%</td><td class="num">{{ r.unseen.f1 }}%</td><td class="num">{{ r.unseen.roc_auc }}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" style="font-size:14px;margin:14px 0 0">Precision, recall, F1 and ROC-AUC are macro-averaged on unseen samples, averaged over three random splits. Retrain anytime with <code>python ml/train.py</code>.</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

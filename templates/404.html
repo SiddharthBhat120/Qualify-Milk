@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Page not found · Qualify Milk{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+<section class="spill">
+  <div>
+    <div data-glass data-level="0.25"></div>
+    <h1 class="display-xl">Spilled.</h1>
+    <p class="lead" style="margin:18px auto 28px">This page doesn't exist (error 404). No use crying over it.</p>
+    <a class="btn" href="{{ url_for('index') }}">Back to home <span class="arrow">→</span></a>
+  </div>
+</section>
+{% endblock %}

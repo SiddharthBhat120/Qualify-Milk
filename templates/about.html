@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}About · Qualify Milk{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="wrap">
+    <span class="kicker"><i></i> The project</span>
+    <h1 class="display-l">Lab results,<br>without the lab wait.</h1>
+    <p class="lead">Checking milk quality by hand is slow and depends on who's doing it. Qualify Milk learns from graded lab samples and grades new ones instantly.</p>
+  </div>
+</section>
+<div class="wrap about-grid" style="padding-bottom:40px">
+  <div class="panel reveal">
+    <h2 class="display-m" style="margin-bottom:14px">What it does</h2>
+    <p class="muted">Dairy producers and quality-control teams measure seven properties of a sample. The model compares those readings to {{ '{:,}'.format(metrics.dataset.rows) if metrics else '1,059' }} graded samples and predicts whether the milk is high, medium or low quality, with a confidence score and a note on any reading that looks off.</p>
+    <p class="muted" style="margin:0">Ten algorithms were compared, from Logistic Regression to a stacked ensemble. Each one was scored on samples it had never seen, because the dataset contains many repeated rows that make normal accuracy look better than it is.</p>
+  </div>
+  <div class="panel reveal" style="--d:.1s">
+    <h2 class="display-m" style="margin-bottom:14px">Built with</h2>
+    <div class="stack">
+      {% for t in ['Python','Flask','scikit-learn','pandas','NumPy','SQLAlchemy','SQLite','bcrypt','Vanilla JS','SVG animation'] %}<span>{{ t }}</span>{% endfor %}
+    </div>
+    <h3 style="font-size:1.2rem;margin:28px 0 10px">Next up</h3>
+    <ul class="muted" style="margin:0;padding-left:20px">
+      <li>Live readings from IoT sensors on the farm</li>
+      <li>Detecting adulteration and microbial contamination</li>
+      <li>A mobile app for collection centres</li>
+    </ul>
+  </div>
+  <div class="panel reveal" style="grid-column:1/-1">
+    <div class="author">
+      <div class="avatar">S</div>
+      <div>
+        <h2 style="font-size:1.6rem">Siddharth Bhat</h2>
+        <p class="muted" style="margin:4px 0 0">Designed and built Qualify Milk: data analysis, model training, backend and interface. MCA student at St Aloysius (AIMIT), Mangaluru.</p>
+      </div>
+      <a class="btn btn-sm btn-ghost" style="margin-left:auto" href="https://github.com/SiddharthBhat120" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

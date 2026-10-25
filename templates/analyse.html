@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Analyser · Qualify Milk{% endblock %}
+{% block content %}
+<section class="page-head" style="padding-bottom:34px">
+  <div class="wrap">
+    <span class="kicker"><i></i> Live analyser</span>
+    <h1 class="display-l">Test a sample.</h1>
+    <p class="lead">Every change updates the grade instantly. When you're happy, save it to your history.</p>
+  </div>
+</section>
+
+<div class="wrap lab">
+  <form id="lab-form" class="panel" novalidate>
+    <div class="panel-title">
+      <h2>Readings</h2>
+      <div class="presets" aria-label="Load a real sample from the dataset">
+        <span class="muted" style="font-size:14px;align-self:center;margin-right:4px">Try:</span>
+        <button type="button" class="preset" data-grade="high">High</button>
+        <button type="button" class="preset" data-grade="medium">Medium</button>
+        <button type="button" class="preset" data-grade="low">Low</button>
+      </div>
+    </div>
+
+    <div class="ctrl">
+      <div class="ctrl-head"><label for="pH">pH <span class="hint">· fresh milk ≈ 6.6</span></label><output class="readout" id="pH-out" for="pH">6.6</output></div>
+      <input class="ph" type="range" id="pH" name="pH" min="3" max="9.5" step="0.1" value="6.6">
+      <div class="scale"><span>3 acidic</span><span>6.6</span><span>9.5 alkaline</span></div>
+    </div>
+
+    <div class="ctrl">
+      <div class="ctrl-head"><label for="Temperature">Temperature <span class="hint">· °C</span></label><output class="readout" id="Temperature-out" for="Temperature">40°</output></div>
+      <input type="range" id="Temperature" name="Temperature" min="34" max="90" step="1" value="40">
+      <div class="scale"><span>34°</span><span>90°</span></div>
+    </div>
+
+    <div class="ctrl">
+      <div class="toggle-row">
+        {% for name, a, b, a_val, bad in [('Taste','Good','Bad',1,0),('Odor','Good','Bad',1,0),('Fat','Optimal','Low',1,0),('Turbidity','Clear','Cloudy',0,1)] %}
+        <fieldset class="seg">
+          <legend>{{ name }}</legend>
+          <div class="seg-track">
+            <span class="seg-thumb"></span>
+            <input type="radio" id="{{ name }}-a" name="{{ name }}" value="{{ a_val }}" checked {% if bad == 0 %}data-bad="0"{% endif %}>
+            <label for="{{ name }}-a">{{ a }}</label>
+            <input type="radio" id="{{ name }}-b" name="{{ name }}" value="{{ 1 - a_val }}" data-bad="1">
+            <label for="{{ name }}-b">{{ b }}</label>
+          </div>
+        </fieldset>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="ctrl">
+      <div class="ctrl-head"><label for="Colour">Colour <span class="hint">· whiteness out of 255</span></label>
+        <div style="display:flex;align-items:center;gap:12px"><span class="swatch" id="colour-swatch"></span><output class="readout" id="Colour-out" for="Colour">254</output></div>
+      </div>
+      <input type="range" id="Colour" name="Colour" min="240" max="255" step="1" value="254">
+      <div class="scale"><span>240 yellowish</span><span>255 white</span></div>
+    </div>
+
+    <div class="actions">
+      <label class="sr-only" for="sample-label">Sample name (optional)</label>
+      <input class="label-input" id="sample-label" name="label" maxlength="32" placeholder="Name this sample (optional)">
+      <button class="btn" id="save-btn" type="submit">Save result <span class="arrow">→</span></button>
+    </div>
+  </form>
+
+  <aside class="panel result" aria-live="polite">
+    <div class="result-top">
+      <div data-glass data-level="0.6"></div>
+      <div>
+        <span class="live" id="live"><i></i> Live</span>
+        <p class="verdict-label" style="margin:14px 0 4px">Predicted quality</p>
+        <span class="verdict" id="verdict">…</span>
+        <p class="confidence" id="confidence">&nbsp;</p>
+      </div>
+    </div>
+    <div class="probs">
+      {% for g in ['high','medium','low'] %}
+      <div class="prob" data-g="{{ g }}"><span>{{ g|capitalize }}</span><div class="prob-bar"><i></i></div><span>0%</span></div>
+      {% endfor %}
+    </div>
+    <p class="result-error" id="result-error" hidden></p>
+    <ul class="notes" id="notes"></ul>
+    <p class="model-tag">Graded by the {{ model_name|lower }} model · <a href="{{ url_for('models') }}">how accurate is it?</a></p>
+  </aside>
+</div>
+<script type="application/json" id="presets">{{ presets|tojson }}</script>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/analyse.js') }}"></script>{% endblock %}

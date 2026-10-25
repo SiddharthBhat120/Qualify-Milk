@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Create account' if mode == 'register' else 'Log in' }} · Qualify Milk{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+<div class="auth">
+  <div class="auth-side">
+    <div>
+      <h1 class="display-l">Every sample,<br>on record.</h1>
+      <p class="lead" style="color:rgba(255,255,255,.8);margin-top:20px">Log in to grade samples and keep a history of every result you save.</p>
+    </div>
+    <div data-glass data-level="0.7"></div>
+  </div>
+  <div class="auth-main">
+    <div class="auth-card">
+      <div class="tabs {% if mode == 'register' %}reg{% endif %}" role="tablist">
+        <span class="tabs-thumb"></span>
+        <button type="button" role="tab" data-tab="login" aria-selected="{{ 'false' if mode == 'register' else 'true' }}">Log in</button>
+        <button type="button" role="tab" data-tab="register" aria-selected="{{ 'true' if mode == 'register' else 'false' }}">Create account</button>
+      </div>
+
+      <form class="auth-form {% if mode != 'register' %}active{% endif %}" id="form-login" method="post" action="{{ url_for('login') }}">
+        <h2 class="display-m">Welcome back.</h2>
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="field"><label for="l-user">Username or email</label><input id="l-user" name="username" autocomplete="username" required></div>
+        <div class="field"><label for="l-pass">Password</label><div class="pw"><input id="l-pass" type="password" name="password" autocomplete="current-password" required><button type="button" data-show>Show</button></div></div>
+        <button class="btn" type="submit" style="margin-top:6px">Log in <span class="arrow">→</span></button>
+      </form>
+
+      <form class="auth-form {% if mode == 'register' %}active{% endif %}" id="form-register" method="post" action="{{ url_for('register') }}">
+        <h2 class="display-m">Make an account.</h2>
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="field"><label for="r-user">Username</label><input id="r-user" name="username" minlength="3" maxlength="64" autocomplete="username" required></div>
+        <div class="field"><label for="r-mail">Email</label><input id="r-mail" type="email" name="email" autocomplete="email" required></div>
+        <div class="field"><label for="r-pass">Password</label><div class="pw"><input id="r-pass" type="password" name="password" minlength="6" autocomplete="new-password" required><button type="button" data-show>Show</button></div></div>
+        <div class="field"><label for="r-conf">Confirm password</label><input id="r-conf" type="password" name="confirm" minlength="6" autocomplete="new-password" required></div>
+        <button class="btn" type="submit" style="margin-top:6px">Create account <span class="arrow">→</span></button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  (() => {
+    const tabs = document.querySelector(".tabs");
+    tabs.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
+      const reg = b.dataset.tab === "register";
+      tabs.classList.toggle("reg", reg);
+      tabs.querySelectorAll("button").forEach((x) => x.setAttribute("aria-selected", x === b));
+      document.getElementById("form-login").classList.toggle("active", !reg);
+      document.getElementById("form-register").classList.toggle("active", reg);
+      history.replaceState(null, "", reg ? "?mode=register" : "?mode=login");
+    }));
+    document.querySelectorAll("[data-show]").forEach((b) => b.addEventListener("click", () => {
+      const i = b.previousElementSibling, hidden = i.type === "password";
+      i.type = hidden ? "text" : "password";
+      b.textContent = hidden ? "Hide" : "Show";
+    }));
+  })();
+</script>
+{% endblock %}

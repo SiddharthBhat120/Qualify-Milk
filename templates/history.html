@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}History · Qualify Milk{% endblock %}
+{% block content %}
+<section class="page-head" style="padding-bottom:34px">
+  <div class="wrap">
+    <span class="kicker"><i></i> {{ user.username }}</span>
+    <h1 class="display-l">Your samples.</h1>
+    <p class="lead">Every result you've saved from the analyser, newest first.</p>
+  </div>
+</section>
+<div class="wrap" style="padding-bottom:40px">
+  {% if preds %}
+  <div class="tally reveal">
+    <div><b data-count="{{ preds|length }}">0</b><span class="muted">saved samples</span></div>
+    <div><b class="grade-high" data-count="{{ counts.high }}">0</b><span class="muted">high quality</span></div>
+    <div><b class="grade-medium" data-count="{{ counts.medium }}">0</b><span class="muted">medium quality</span></div>
+    <div><b class="grade-low" data-count="{{ counts.low }}">0</b><span class="muted">low quality</span></div>
+  </div>
+  <div class="panel reveal">
+    <div class="panel-title">
+      <h2>Saved results</h2>
+      <form method="post" action="{{ url_for('clear_history') }}" onsubmit="return confirm('Delete all saved samples? This can\'t be undone.')">
+        <button class="btn btn-sm btn-ghost" type="submit" style="color:var(--low)">Clear history</button>
+      </form>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sample</th><th>Grade</th><th class="num">Confidence</th><th class="num">pH</th><th class="num">Temp</th><th>Taste</th><th>Odor</th><th>Fat</th><th>Turbidity</th><th class="num">Colour</th><th>Saved</th><th></th></tr></thead>
+        <tbody>
+          {% for p in preds %}{% set v = p.values %}
+          <tr>
+            <td><b>{{ p.label or 'Sample #' ~ p.id }}</b></td>
+            <td><span class="pill {{ p.grade }}">{{ p.grade|capitalize }}</span></td>
+            <td class="num">{{ p.confidence }}%</td>
+            <td class="num">{{ v.pH }}</td><td class="num">{{ v.Temperature }}°</td>
+            <td>{{ 'Good' if v.Taste else 'Bad' }}</td><td>{{ 'Good' if v.Odor else 'Bad' }}</td>
+            <td>{{ 'Optimal' if v.Fat else 'Low' }}</td><td>{{ 'Cloudy' if v.Turbidity else 'Clear' }}</td>
+            <td class="num">{{ v.Colour }}</td>
+            <td class="muted">{{ p.created_at.strftime('%d %b %Y, %H:%M') }}</td>
+            <td><form method="post" action="{{ url_for('delete_prediction', pid=p.id) }}"><button class="icon-btn" type="submit" aria-label="Delete {{ p.label or 'sample' }}">Delete</button></form></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" style="font-size:13px;margin:12px 0 0">Times are in UTC.</p>
+  </div>
+  {% else %}
+  <div class="panel empty">
+    <div data-glass data-level="0.12"></div>
+    <h2 style="font-size:1.8rem">No samples yet</h2>
+    <p class="muted">Run a sample through the analyser and press <b>Save result</b>.</p>
+    <a class="btn" href="{{ url_for('analyse') }}">Open the analyser <span class="arrow">→</span></a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

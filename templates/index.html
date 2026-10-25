@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Qualify Milk: know your milk in seconds{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <h1 class="display-xl">
+        <span class="line"><span>Know your</span></span>
+        <span class="line"><span class="hl">milk</span></span>
+        <span class="line"><span>in seconds.</span></span>
+      </h1>
+      <p class="lead fade-in" style="animation-delay:.5s">Enter seven readings from a milk sample: pH, temperature, taste, smell, fat, turbidity and colour. A machine-learning model grades it high, medium or low, and explains which readings matter.</p>
+      <div class="hero-actions fade-in" style="animation-delay:.65s">
+        <a class="btn btn-milk" href="{{ url_for('analyse') }}">Test a sample <span class="arrow">→</span></a>
+        <a class="btn btn-ghost" href="{{ url_for('models') }}">See how accurate it is</a>
+      </div>
+      {% if metrics %}
+      <div class="hero-stats fade-in" style="animation-delay:.8s">
+        <div><b data-count="{{ '%g'|format(metrics.holdout_accuracy) }}" data-suffix="%">0%</b><span>accuracy on the test split</span></div>
+        <div><b data-count="{{ metrics.models|length }}">0</b><span>algorithms compared</span></div>
+        <div><b data-count="{{ metrics.dataset.rows }}">0</b><span>lab samples learned from</span></div>
+      </div>
+      {% endif %}
+    </div>
+    <div class="hero-glass fade-in" style="animation-delay:.2s">
+      <span class="splash" style="width:16px;height:16px;left:46%;top:-30px"></span>
+      <span class="splash" style="width:10px;height:10px;left:58%;top:-60px;animation-delay:1.6s"></span>
+      <div data-glass data-level="0.78" style="color:#fff"></div>
+    </div>
+  </div>
+  <svg class="hero-wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path fill="currentColor" d="M0 50 C 240 10 420 90 720 50 S 1200 10 1440 50 V90 H0Z"/></svg>
+</section>
+
+<div class="band" aria-hidden="true">
+  <div class="band-track">
+    {% for _ in range(2) %}<span>pH</span><span>Temperature</span><span>Taste</span><span>Odor</span><span>Fat</span><span>Turbidity</span><span>Colour</span>{% endfor %}
+  </div>
+</div>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2 class="display-l">From sample<br>to grade.</h2>
+      <p class="lead">No lab report to read. Move the controls, watch the glass, get a grade.</p>
+    </div>
+    <div class="steps">
+      <article class="step reveal" style="--d:0s">
+        <span class="step-num">1</span>
+        <div class="step-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></div>
+        <h3>Enter the readings</h3>
+        <p>Slide pH, temperature and colour. Flip taste, smell, fat and turbidity. Or load a real sample from the dataset.</p>
+      </article>
+      <article class="step reveal" style="--d:.1s">
+        <span class="step-num">2</span>
+        <div class="step-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <h3>The model weighs them</h3>
+        <p>A stacked ensemble of four tree models scores the sample. The grade updates live as you change anything.</p>
+      </article>
+      <article class="step reveal" style="--d:.2s">
+        <span class="step-num">3</span>
+        <div class="step-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+        <h3>Read the verdict</h3>
+        <p>High, medium or low, with the model's confidence and a note on every reading that looks off. Save it to your history.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2 class="display-l">Seven readings.</h2>
+      <p class="lead">These are the inputs the model was trained on, with the range it has seen for each one.</p>
+    </div>
+    <div class="params reveal">
+      <div class="param"><b>pH</b><span class="range">3.0 – 9.5</span><p>Acidity. Fresh milk sits near 6.6; souring drops it.</p></div>
+      <div class="param"><b>Temperature</b><span class="range">34 – 90 °C</span><p>Recorded temperature of the sample.</p></div>
+      <div class="param"><b>Taste</b><span class="range">Good / Bad</span><p>Whether the sample tastes normal.</p></div>
+      <div class="param"><b>Odor</b><span class="range">Good / Bad</span><p>Whether it smells normal.</p></div>
+      <div class="param"><b>Fat</b><span class="range">Optimal / Low</span><p>Whether fat content meets the optimal level.</p></div>
+      <div class="param"><b>Turbidity</b><span class="range">Clear / Cloudy</span><p>Cloudiness from suspended particles.</p></div>
+      <div class="param"><b>Colour</b><span class="range">240 – 255</span><p>Whiteness on a 255 scale. Lower is more yellow.</p></div>
+      <div class="param wide" style="grid-column:auto">
+        <p>The dataset has 1,059 graded samples: 429 low, 374 medium and 256 high.</p>
+        <a class="btn btn-milk btn-sm" href="{{ url_for('models') }}">Explore the models <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="cta reveal">
+      <div>
+        <h2 class="display-l">Got a sample?</h2>
+        <p class="lead" style="color:rgba(255,255,255,.75);margin-top:18px">Create a free account and every result you save stays in your history.</p>
+        <div class="hero-actions">
+          <a class="btn btn-milk" href="{{ url_for('analyse') }}">Open the analyser <span class="arrow">→</span></a>
+          {% if not user %}<a class="btn btn-ghost" href="{{ url_for('auth', mode='register') }}">Create account</a>{% endif %}
+        </div>
+      </div>
+      <div data-glass data-level="0.5"></div>
+    </div>
+  </div>
+</section>
+{% endblock %}
