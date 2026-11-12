@@ -125,4 +125,4 @@ The response includes `grade`, `confidence`, `probabilities` and `insights`. Sen
 
 ## 👤 Author
 
-**Siddharth Bhat** · [GitHub @SiddharthBhat120](https://github.com/SiddharthBhat120)
+**Siddharth Bhat** · [GitHub @sidxcodes](https://github.com/sidxcodes)
