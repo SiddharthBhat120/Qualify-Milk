@@ -1,5 +1,7 @@
 # 🥛 Qualify Milk
 
+[![tests](https://github.com/sidxcodes/Qualify-Milk/actions/workflows/ci.yml/badge.svg)](https://github.com/sidxcodes/Qualify-Milk/actions/workflows/ci.yml)
+
 **Predict milk quality (high, medium or low) from seven lab readings using machine learning.**
 
 Move the sliders and the grade updates live, with the model's confidence, a probability for each grade, and a plain-language note on every reading that looks off. Results can be saved to your personal history.
